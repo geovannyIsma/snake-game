@@ -1,0 +1,44 @@
+{% extends 'game/base.html' %}
+{% load static %}
+
+{% block title %}Snake Game - Jugar{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <h1>🐍 Snake Game</h1>
+    <div class="game-info">
+        <div class="score">
+            <span>Puntuación</span>
+            <span id="score">0</span>
+        </div>
+        <div class="high-score">
+            <span>Mejor Puntuación</span>
+            <span id="high-score">0</span>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    
+    <div class="controls">
+        <p>🎮 Usa las flechas del teclado para mover la serpiente</p>
+        <div>
+            <button id="startBtn">🚀 Iniciar Juego</button>
+            <button id="pauseBtn">⏸️ Pausar</button>
+        </div>
+    </div>
+    
+    <div id="gameOver" class="game-over hidden">
+        <h2>💀 ¡Juego Terminado!</h2>
+        <p>Tu puntuación final: <span id="finalScore">0</span></p>
+        <input type="text" id="playerName" placeholder="Ingresa tu nombre" maxlength="50">
+        <div>
+            <button id="saveScoreBtn">💾 Guardar Puntuación</button>
+            <button id="restartBtn">🔄 Jugar de Nuevo</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'game/js/snake.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Snake Game{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'game/css/style.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-content">
+                <h2>🐍 Snake</h2>
+                <nav>
+                    <a href="{% url 'game:game' %}" class="nav-link">🎮 Jugar</a>
+                    <a href="{% url 'game:high_scores' %}" class="nav-link">🏆 Puntuaciones</a>
+                </nav>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+    
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>
