@@ -44,7 +44,7 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection) # Usa la conexión de servicio para ACR
               tags: |
                 $(tag)
-                latest # También etiqueta como 'latest' para fácil referencia
+                latest
 
   - stage: Deploy
     displayName: 'Deploy to Azure App Service'
