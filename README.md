@@ -2,6 +2,13 @@
 
 Este repositorio contiene el código fuente y la configuración de CI/CD para desplegar una aplicación Snake Game en Azure usando Azure DevOps, Docker y Azure App Service.
 
+## Sobre el juego
+
+Snake Game es una aplicación web desarrollada con Django que permite a los usuarios jugar el clásico juego de la serpiente. La aplicación incluye:
+- Juego interactivo de Snake con JavaScript
+- Sistema de puntuaciones altas
+- Interfaz de administración Django para gestionar puntajes
+
 ## Estructura del repositorio
 
 - `docker/dockerfile`: Dockerfile para construir la imagen de la aplicación.
@@ -25,5 +32,4 @@ Cada vez que haces un push a la rama `main`, el pipeline se ejecuta automáticam
    git push origin main
    ```
 3. El pipeline se ejecutará automáticamente tras el push.
-
 ---
