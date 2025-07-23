@@ -45,6 +45,7 @@ stages:
               tags: |
                 $(tag)
                 latest
+              buildContext: '$(Build.SourcesDirectory)'
 
   - stage: Deploy
     displayName: 'Deploy to Azure App Service'
