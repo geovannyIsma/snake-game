@@ -77,6 +77,7 @@ stages:
               appName: $(webAppName) # Nombre del App Service
               resourceGroupName: $(resourceGroupName) # Grupo de recursos del App Service
               appType: webAppLinux # <--- ESENCIAL: Indica que es un App Service Linux
+              package: ''
               scriptType: bash # <--- Tipo de script (Bash para comandos Linux)
               inlineScript: | # <--- Aquí va el comando a ejecutar
                 python manage.py migrate
