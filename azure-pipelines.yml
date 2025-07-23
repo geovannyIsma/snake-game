@@ -69,18 +69,3 @@ stages:
               # Configuración crucial para Django en App Service Linux con Docker
               # Ya no es necesario 'appSettings: WEBSITES_PORT 8000' si lo configuras manualmente en el portal
               # o si usas la variable de inicio correcta en tu Dockerfile.
-
-          - task: AzureWebApp@1 # <--- ¡MODIFICADO AQUÍ!
-            displayName: 'Execute Django Migrations'
-            inputs:
-              azureSubscription: $(azureSubscriptionServiceConnection) # Usa la conexión de servicio a la suscripción
-              appName: $(webAppName) # Nombre del App Service
-              resourceGroupName: $(resourceGroupName) # Grupo de recursos del App Service
-              appType: webAppLinux # <--- ESENCIAL: Indica que es un App Service Linux
-              package: ''
-              scriptType: bash # <--- Tipo de script (Bash para comandos Linux)
-              inlineScript: | # <--- Aquí va el comando a ejecutar
-                python manage.py migrate
-            # Esta tarea se ejecutará *después* de que la nueva imagen se haya desplegado
-            # y el App Service esté intentando iniciar la aplicación.
-            # Es importante que la base de datos esté accesible y las variables de entorno configuradas.
