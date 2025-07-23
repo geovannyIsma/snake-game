@@ -10,20 +10,17 @@ resources:
   - repo: self # Define que el repositorio es el mismo donde está el pipeline
 
 variables:
-  # Container registry service connection established during pipeline creation
-  # Este es el ID de la conexión de servicio que usaste para Docker Registry
   dockerRegistryServiceConnection: '80947ddd-b5d5-47a6-a216-3f219b2edda6'
-  imageRepository: 'geovannyismasnakegame' # El nombre de tu repositorio de imagen en ACR
-  containerRegistry: 'snakegame.azurecr.io' # El FQDN de tu Azure Container Registry
-  dockerfilePath: '$(Build.SourcesDirectory)/docker/dockerfile' # Ruta a tu Dockerfile desde la raíz del repositorio
-  tag: '$(Build.BuildId)' # Usa el ID de la compilación como etiqueta para la imagen (más seguro para rollbacks)
+  imageRepository: 'geovannyismasnakegame'
+  containerRegistry: 'snakegame.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/docker/dockerfile'
+  tag: '$(Build.BuildId)'
 
   # Detalles de Azure App Service y la conexión de servicio a la suscripción de Azure
-  # Este es el nombre de la conexión de servicio a tu suscripción de Azure (no el ID, sino el nombre que le diste)
   azureSubscriptionServiceConnection: 'snake-game-con'
-  resourceGroupName: 'snake-game' # El nombre de tu grupo de recursos en Azure
-  webAppName: 'snake-game-app' # El nombre de tu Azure App Service
-  appServicePlan: 'ASP-snakegame-a038' # El nombre de tu Plan de App Service
+  resourceGroupName: 'snake-game'
+  webAppName: 'snake-game-app'
+  appServicePlan: 'ASP-snakegame-a038'
 
 stages:
   - stage: Build
@@ -33,7 +30,7 @@ stages:
         displayName: 'Build and Push'
         pool:
           name: mypool # <--- ¡AHORA USANDO TU AGENTE AUTOHOSPEDADO!
-          # vmImage: $(vmImageName) # Comentado o eliminado, ya no se usa el agente alojado
+          # vmImage: $(vmImageName) # Comentado ya no se usa el agente alojado
         steps:
           - task: Docker@2
             displayName: 'Build and push an image to container registry'
@@ -41,7 +38,7 @@ stages:
               command: buildAndPush
               repository: $(imageRepository)
               dockerfile: $(dockerfilePath)
-              containerRegistry: $(dockerRegistryServiceConnection) # Usa la conexión de servicio para ACR
+              containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
                 latest
@@ -54,18 +51,16 @@ stages:
         displayName: 'Deploy Web App'
         pool:
           name: mypool # <--- ¡AHORA USANDO TU AGENTE AUTOHOSPEDADO!
-          # vmImage: $(vmImageName) # Comentado o eliminado, ya no se usa el agente alojado
+          # vmImage: $(vmImageName) # Comentado ya no se usa el agente alojado
 
         steps:
           - task: AzureWebAppContainer@1
             displayName: 'Deploy Docker Image to Azure App Service'
             inputs:
-              azureSubscription: $(azureSubscriptionServiceConnection) # Usa la conexión de servicio a la suscripción
-              appName: $(webAppName) # Nombre del App Service
-              resourceGroupName: $(resourceGroupName) # Grupo de recursos del App Service
-              appType: webAppLinux # Tipo de App Service (Linux con contenedor)
+              azureSubscription: $(azureSubscriptionServiceConnection)
+              appName: $(webAppName)
+              resourceGroupName: $(resourceGroupName)
+              appType: webAppLinux
               # La imagen completa a desplegar desde ACR
               imageName: '$(containerRegistry)/$(imageRepository):$(tag)' # Combina el registro y el repositorio con la etiqueta
-              # Configuración crucial para Django en App Service Linux con Docker
-              # Ya no es necesario 'appSettings: WEBSITES_PORT 8000' si lo configuras manualmente en el portal
-              # o si usas la variable de inicio correcta en tu Dockerfile.
+ 
