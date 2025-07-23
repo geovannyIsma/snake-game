@@ -20,7 +20,7 @@ variables:
   azureSubscriptionServiceConnection: 'snake-game-con'
   resourceGroupName: 'snake-game'
   webAppName: 'snake-game-app'
-  appServicePlan: 'ASP-snakegame-a038'
+  appServicePlan: 'ASP-snakegame-a47d'
 
 stages:
   - stage: Build
