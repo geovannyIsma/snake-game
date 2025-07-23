@@ -1,0 +1,92 @@
+# azure-pipelines.yml
+# Este pipeline construye tu imagen Docker, la envía a Azure Container Registry (ACR)
+# y luego despliega la aplicación en Azure App Service.
+# Finalmente, ejecuta las migraciones de Django en el contenedor desplegado.
+
+trigger:
+  - main # El pipeline se ejecutará cada vez que haya un push a la rama 'main'
+
+resources:
+  - repo: self # Define que el repositorio es el mismo donde está el pipeline
+
+variables:
+  # Container registry service connection established during pipeline creation
+  # Este es el ID de la conexión de servicio que usaste para Docker Registry
+  dockerRegistryServiceConnection: '80947ddd-b5d5-47a6-a216-3f219b2edda6'
+  imageRepository: 'geovannyismasnakegame' # El nombre de tu repositorio de imagen en ACR
+  containerRegistry: 'snakegame.azurecr.io' # El FQDN de tu Azure Container Registry
+  dockerfilePath: '$(Build.SourcesDirectory)/docker/dockerfile' # Ruta a tu Dockerfile desde la raíz del repositorio
+  tag: '$(Build.BuildId)' # Usa el ID de la compilación como etiqueta para la imagen (más seguro para rollbacks)
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+  # Detalles de Azure App Service y la conexión de servicio a la suscripción de Azure
+  # Este es el nombre de la conexión de servicio a tu suscripción de Azure (no el ID, sino el nombre que le diste)
+  azureSubscriptionServiceConnection: 'snake-game-con'
+  resourceGroupName: 'snake-game' # El nombre de tu grupo de recursos en Azure
+  webAppName: 'snake-game-app' # El nombre de tu Azure App Service
+  appServicePlan: 'ASP-snakegame-a038' # El nombre de tu Plan de App Service
+
+stages:
+  - stage: Build
+    displayName: 'Build and Push Docker Image'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build and Push'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: Docker@2
+            displayName: 'Build and push an image to container registry'
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: $(dockerRegistryServiceConnection) # Usa la conexión de servicio para ACR
+              tags: |
+                $(tag)
+                latest # También etiqueta como 'latest' para fácil referencia
+
+  - stage: Deploy
+    displayName: 'Deploy to Azure App Service'
+    jobs:
+      - job: DeployWeb
+        displayName: 'Deploy Web App'
+        pool:
+          vmImage: $(vmImageName) # Agente de compilación de Ubuntu
+
+        steps:
+          - task: AzureWebAppContainer@1
+            displayName: 'Deploy Docker Image to Azure App Service'
+            inputs:
+              azureSubscription: $(azureSubscriptionServiceConnection) # Usa la conexión de servicio a la suscripción
+              appName: $(webAppName) # Nombre del App Service
+              resourceGroupName: $(resourceGroupName) # Grupo de recursos del App Service
+              appType: webAppLinux # Tipo de App Service (Linux con contenedor)
+              # La imagen completa a desplegar desde ACR
+              imageName: '$(containerRegistry)/$(imageRepository):$(tag)' # Combina el registro y el repositorio con la etiqueta
+              # Configuración crucial para Django en App Service Linux con Docker
+              appSettings: |
+                - WEBSITES_PORT 8000 # Indica a App Service que tu contenedor escucha en el puerto 8000
+              # No se especifica 'startupCommand' aquí si ya lo configuraste en el portal de Azure
+              # o si tu Dockerfile ya tiene el CMD correcto.
+              # Si no lo tienes en el Dockerfile ni en el portal, podrías usar:
+              # startupCommand: 'gunicorn snakes.wsgi --bind 0.0.0.0:8000'
+
+          - task: AzureWebAppContainer@1
+            displayName: 'Execute Django Migrations'
+            inputs:
+              azureSubscription: $(azureSubscriptionServiceConnection) # Usa la conexión de servicio a la suscripción
+              appName: $(webAppName) # Nombre del App Service
+              resourceGroupName: $(resourceGroupName) # Grupo de recursos del App Service
+              # Comando para ejecutar las migraciones dentro del contenedor desplegado
+              # Asegúrate de que la ruta a manage.py sea correcta dentro de tu contenedor.
+              # Si tu Dockerfile copia el contenido de 'snakes' a '/app', entonces 'manage.py'
+              # estará en '/app/manage.py'. Si lo copia a '/app/snakes', entonces es 'snakes/manage.py'.
+              # Basado en tu Dockerfile anterior, donde 'COPY snakes /app/', 'manage.py' está en '/app/manage.py'.
+              command: |
+                python manage.py migrate
+            # Esta tarea se ejecutará *después* de que la nueva imagen se haya desplegado
+            # y el App Service esté intentando iniciar la aplicación.
+            # Es importante que la base de datos esté accesible y las variables de entorno configuradas.
