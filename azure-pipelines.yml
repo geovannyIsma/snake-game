@@ -67,11 +67,6 @@ stages:
               # La imagen completa a desplegar desde ACR
               imageName: '$(containerRegistry)/$(imageRepository):$(tag)' # Combina el registro y el repositorio con la etiqueta
               # Configuración crucial para Django en App Service Linux con Docker
-              appSettings: 'WEBSITES_PORT 8000'
-              # No se especifica 'startupCommand' aquí si ya lo configuraste en el portal de Azure
-              # o si tu Dockerfile ya tiene el CMD correcto.
-              # Si no lo tienes en el Dockerfile ni en el portal, podrías usar:
-              # startupCommand: 'gunicorn snakes.wsgi --bind 0.0.0.0:8000'
 
           - task: AzureWebAppContainer@1
             displayName: 'Execute Django Migrations'
